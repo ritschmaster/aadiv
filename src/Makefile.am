@@ -33,8 +33,7 @@ CLEANFILES = $(bin_SCRIPTS)
 EXTRA_DIST = $(aadiv_SCRIPTS_SOURCES)
 
 aadiv: $(aadiv_SCRIPTS_SOURCES)
-	touch aadiv
-	echo '#!/bin/bash' >> aadiv
+	echo '#!/bin/bash' > aadiv
 	cat $(aadiv_SCRIPTS_SOURCES) >> aadiv
 	chmod +x aadiv
 	sed -i s/PACKAGE_NAME/@PACKAGE_NAME@/g aadiv
