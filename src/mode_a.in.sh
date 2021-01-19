@@ -23,33 +23,35 @@
 ################################################################################
 
 function mode_a() {
-	input="$1"
-	input_basename=$(basename "$input")
-	sequences="$2"
+	in_audio_filename="$1"
+	in_seq_filenames="$2"
+  audio_format="$3"
 
-	input_temp=$(echo /tmp/$input_basename.temp)
+	in_audio_basename=$(basename "$in_audio_filename")
 
-	cp "$input" "$input_temp"
+	in_audio_filename_temp=$(echo /tmp/$in_audio_basename.temp)
+
+	cp "$in_audio_filename" "$in_audio_filename_temp"
 
 	last_duration=0
 	cur_duration=0
 	duration=0
 	counter=1
-	for seq in $(cat "$sequences"); do
-		input_temp_new=$(echo "$input_temp.wav")
+	for seq in $(cat "$in_seq_filenames"); do
+		in_audio_filename_temp_new=$(echo "$in_audio_filename_temp.$audio_format")
 
 		cur_duration=$(date -d "1970-01-01 $seq UTC" +%s)
 		duration=$(($cur_duration - $last_duration))
 
-		ffmpeg -t $duration -i "$input_temp" $counter.wav
-		ffmpeg -ss $seq -i "$input" "$input_temp_new"
-		mv "$input_temp_new" "$input_temp"
+		ffmpeg -t $duration -i "$in_audio_filename_temp" $counter.$audio_format
+		ffmpeg -ss $seq -i "$in_audio_filename" "$in_audio_filename_temp_new"
+		mv "$in_audio_filename_temp_new" "$in_audio_filename_temp"
 
 		counter=$(($counter + 1))
 		last_duration=$cur_duration
 	done
 
 	if [[ $last_duration -ne 0 ]]; then
-		mv "$input_temp" "$counter.wav"
+		mv "$in_audio_filename_temp" "$counter.$audio_format"
 	fi
 }

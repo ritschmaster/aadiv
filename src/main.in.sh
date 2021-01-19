@@ -33,8 +33,9 @@ function print_help() {
 	echo "Usage: $0 [options] <mode> <input-audio-file> <input-sequence-file>"
 	echo ""
 	echo "Available options:"
-	echo "-V  Print version and exit"
-	echo "-h  Print this help text and exit"
+	echo "-h             Print this help text and exit"
+	echo "-V             Print version and exit"
+  echo "-f <format>    Specify the audio format. Supported: mp3, ogg, wav"
 	echo ""
 	echo "Available modes:"
 	echo "A   Each line of the input file is a time stamp in the format hh:mm:ss "
@@ -56,8 +57,9 @@ function print_help() {
 bin=$0
 mode=a
 input_audio=''
+audio_format="wav"
 
-while getopts ":Vh" opt; do
+while getopts ":Vhf:" opt; do
 	case "$opt" in
 		"V")
 			print_version
@@ -67,6 +69,9 @@ while getopts ":Vh" opt; do
 			print_help
 			exit
 			;;
+    "f")
+      audio_format="${OPTARG}"
+      ;;
 	esac
 done
 
@@ -77,19 +82,38 @@ if [ $# -ne 3 ]; then
 	exit
 fi
 
+case "$audio_format" in
+  "mp3" | "ogg" | "wav")
+    ;;
+  *)
+    echo -en "Error: unsupported audio format: $audio_format\n" 1>&2
+    exit
+    ;;
+esac
+
 mode="$1"
 input_audio="$2"
 input_seq="$3"
 
+if [ ! -f "$input_audio" ]; then
+  echo -en "Error: not a file: $input_audio\n"  1>&2
+  exit
+fi
+
+if [ ! -f "$input_seq" ]; then
+    echo -en "Error: not a file: $input_seq\n"  1>&2
+    exit
+fi
+
 case $mode in
 	A)
-		mode_a "$input_audio" "$input_seq"
+		mode_a "$input_audio" "$input_seq" "$audio_format"
 		;;
 	B)
-		mode_b "$input_audio" "$input_seq"
+    mode_b "$input_audio" "$input_seq" "$audio_format"
 		;;
 	*)
-		print_help $bin
+    echo -en "Error: unsupported mode: $mode\n"  1>&2
 		exit
 		;;
 esac
